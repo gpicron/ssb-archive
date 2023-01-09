@@ -1,4 +1,4 @@
-# ssb-archive feature proposal
+# ssb-archive feature proposal<!-- omit from toc -->
 
 The **Secure Scuttlebutt (SSB) community** is constantly seeking ways to improve the
 performance and efficiency of the SSB system, particularly when it comes to
@@ -35,9 +35,24 @@ Overall, the ssb-archive feature has the potential to greatly improve the
 performance and efficiency of the SSB system, especially for large and
 old feeds.
 
-# Design
+# Table of Content <!-- omit from toc -->
 
-## FlatBuffer schema
+- [1. Design](#1-design)
+  - [1.1. FlatBuffer schema](#11-flatbuffer-schema)
+  - [1.2. MessageBlock and MessageBlockRef](#12-messageblock-and-messageblockref)
+  - [1.3. Dictionary encoding](#13-dictionary-encoding)
+  - [1.4. Format-specific data](#14-format-specific-data)
+  - [1.5. Emitting "archive" messages](#15-emitting-archive-messages)
+  - [1.6. Verifying and downloading archived messages](#16-verifying-and-downloading-archived-messages)
+- [2. Compatibility](#2-compatibility)
+- [3. Implementation](#3-implementation)
+- [4. Benefits](#4-benefits)
+- [5. Potential extensions](#5-potential-extensions)
+
+
+# 1. Design
+
+## 1.1. FlatBuffer schema
 
 The ssb-archive feature uses a FlatBuffer schema to encode the data that is
 stored on disk and trasmitted as Blobs. We call this format ssb-bipf2. The
@@ -47,7 +62,7 @@ dictionaries, hash values, message and feed IDs, and blocks of messages,
 as well as unions for representing feed-format-specific data and enums for
 encoding data types. A full description of the schema can be found in the Annex.
 
-## MessageBlock and MessageBlockRef
+## 1.2. MessageBlock and MessageBlockRef
 
 The MessageBlockRef table is used to store a reference to a MessageBlock in
 the ssb-bipf2 format. It contains the following fields:
@@ -74,7 +89,7 @@ Together, the MessageBlock and MessageBlockRef tables are used to store blocks
 of consecutive messages from a single feed in a compact and efficient manner,
 allowing them to be easily transmitted and processed.
 
-## Dictionary encoding
+## 1.3. Dictionary encoding
 
 The ssb-bipf2 format uses dictionary encoding to compress the data stored in
 the MessageBlock table. Dictionary encoding is a form of data compression that
@@ -107,7 +122,7 @@ MessageBlock table. The data is first mapped to the integers in the dictionary,
 and then the integers are stored in place of the original data. This allows
 the data to be compressed while still maintaining its original meaning.
 
-## Format-specific data
+## 1.4. Format-specific data
 
 The ssb-bipf2 feature is designed to support multiple message formats, including
 the classic format and any future formats that may be added. To handle these
@@ -182,7 +197,7 @@ using FlexBuffer.
 Overall, the ssb-bipf2 format allows for efficient and selective retrieval of
 data while still maintaining the structure and meaning of the original message.
 
-## Emitting "archive" messages
+## 1.5. Emitting "archive" messages
 
 To implement the ssb-archive proposal, a new message type called _"archive"_ would
 be introduced. This message would be created and emitted by clients with the
@@ -212,7 +227,7 @@ following steps:
   their replica of the feed or retrieving the blobs and validating them from the
   content.
 
-## Verifying and downloading archived messages
+## 1.6. Verifying and downloading archived messages
 
 Clients with the ssb-archive feature can verify the integrity of the archived
 messages and download them using blobs. There are two cases to consider:
@@ -234,7 +249,7 @@ Overall, the ssb-archive feature provides a way for clients to efficiently
 verify and download archived messages, ensuring the security and integrity of
 the data.
 
-# Compatibility
+# 2. Compatibility
 
 There are _no potential compatibility issues_ with the ssb-archive feature that
 would affect existing clients. The ssb-archive feature introduces a new message
@@ -253,7 +268,7 @@ Overall, the ssb-archive feature is designed to be compatible with existing
 clients, while also offering improved performance and efficiency for those that
 choose to use it.
 
-# Implementation
+# 3. Implementation
 
 The ssb-archive feature can be implemented in a few steps:
 
@@ -310,7 +325,7 @@ The ssb-archive feature can be implemented in a few steps:
       result of the verification. This allows the application to take
       appropriate actions based on the result of the verification.
 
-# Benefits
+# 4. Benefits
 
 The ssb-archive feature could offer a number of benefits, including:
 
@@ -336,7 +351,7 @@ The ssb-archive feature could offer a number of benefits, including:
   users
   of SSB who may have limited bandwidth available.
 
-# Potential extensions
+# 5. Potential extensions
 
 1. The ssb-archive feature is driven by the feed owner's client application.
    This means that users replicating that feed and using a client application
