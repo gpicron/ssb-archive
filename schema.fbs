@@ -1,0 +1,72 @@
+// This schema defines the layout of binary data for messages in the SSB-Archive format using the ssb-bipf2 format.
+
+include "core.fbs";
+include "structs.fbs";
+include "dictionaries.fbs";
+include "classic-format.fbs";
+
+// The FormatSpecificBlockSketch union allows for the inclusion of future message formats in the SSB-Archive format.
+union FormatSpecificBlockSketch {
+    ClassicMessageBlockSketch,
+    // future formats
+}
+
+// The FormatSpecificBlockSketch unions allows for the inclusion of future message formats in the SSB-Archive format.
+union FormatSpecificBlockData {
+    ClassicMessageBlock,
+    // future formats
+}
+
+// The MessageBlockSketch and MessageBlock tables contain the metadata for a block of messages, including the number
+// of messages, the sequence number and timestamps of the first and last messages, and the delta between the timestamps of the messages.
+table MessageBlockSketch {
+  length: uint32; // this is the number of messages in this block
+  sequence_number_base: uint32; // this is the sequence number of the first message in this block
+  first_timestamp: uint64; // this is the timestamp of the first message in this block
+  last_timestamp: uint64; // this is the delta between the last message and the previous message
+}
+
+table MessageBlock {
+  sketch: MessageBlockSketch;
+  timestamp_deltas: StreamVByteArray1248; // are the deltas between the timestamps of the messages in this block.
+  types: RunLengthCodedDictionaryColumn; // this is the type of each message in this block (using a dictionary). In column to allow fast scans.
+
+  data: FormatSpecificBlockData;
+
+  sequence_numbers: StreamVByteArray1234; // this is the array of sequence numbers (optional, if absent, the sequence numbers are assumed to be consecutive, this in case the format is used for other purposes than ssb-archive)
+}
+
+// The MessageBlockRef table contains a reference to a MessageBlock, including its blobId hash and sketch metadata.
+table MessageBlockRef {
+  blob_id: Sha512256Hash;
+  sketch: MessageBlockSketch;
+  previous: MessageBlockRef;
+}
+
+// The Bundle table contains an array of MessageBlockRefs, as well as references to dictionaries for types,
+// object keys, object paths, and object signatures.
+table Bundle {
+  message_blocks: [MessageBlockRef];
+
+  type_dictionary: StringDictionaryRef; // this is the dictionary for the types
+  object_key_dictionary: StringDictionaryRef;
+  object_path_dictionary: IntArrayDictionaryRef;
+  object_signature_dictionary: IntArrayDictionaryRef;
+}
+
+union Bip2BlobData {
+  MessageBlock,
+  StringDictionary,
+  IntArrayDictionary,
+
+  Bundle
+}
+
+// The Bip2Blob table is the root type of the schema, and it contains data of various types, including MessageBlocks, dictionaries, and Bundles.
+table Bip2Blob {
+  data: Bip2BlobData;
+}
+
+file_identifier "BIP2";
+file_extension "bipf2";
+root_type Bip2Blob;

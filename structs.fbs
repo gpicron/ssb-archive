@@ -1,0 +1,22 @@
+include "dictionaries.fbs";
+
+// A column of data encoded with a dictionary reference
+// and run length encoded using StreamVByte principles.
+table RunLengthCodedDictionaryColumn {
+  dictionary: DictionaryRef; // Reference to the dictionary used for encoding values
+  length: uint32; // Number of values in the column
+  values: StreamVByteArray1234; // Encoded values from the dictionary
+  lengths: StreamVByteArray1234; // Lengths of each value
+}
+
+// A stream of variable length integer arrays using StreamVByte principles.
+table StreamVByteArray1234 {
+  codes: [ubyte]; // Each byte indicates the number of bytes for 4 integers (2 bits per integer)
+  values: [ubyte]; // Actual integers, encoded in 1, 2, 3, or 4 bytes
+}
+
+// A stream of variable length integer arrays up to 64 bits using StreamVByte principles.
+table StreamVByteArray1248 {
+  codes: [ubyte]; // Each byte indicates the number of bytes for 2 integers (2 bits per integer)
+  values: [ubyte]; // Actual integers, encoded in 1, 2, 4, or 8 bytes
+}

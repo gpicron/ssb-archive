@@ -1,0 +1,45 @@
+include "core.fbs";
+include "structs.fbs";
+
+/**
+ * When encoding messages orginally in the classic format, so fields may be encoded in ssb-uri format or the historical sigil format.
+ * This is a hint to the decoder to know which format is was to be able to rebuild the exact same message.
+ */
+enum OriginalEncoding : uint8 {
+    SIGIL = 0,
+    SSB_URI = 1,
+}
+
+/**
+* Message ID of a message in classic format.
+*/
+struct ClassicMessageId {
+  hash: Sha512256Hash;
+  encoding: OriginalEncoding; // because it is historically encoded in sigil format, but maybe encoded in ssb-uri format
+}
+
+/**
+* Feed ID of a feed in classic format.
+*/
+struct ClassicFeedId {
+  hash: Ed25519Key;
+  encoding: OriginalEncoding; // because it is historically encoded in sigil format, but maybe encoded in ssb-uri format
+}
+
+table ClassicMessageBlockSketch {
+  author: ClassicFeedId; // this is the public key of the author of this block (if CLASSIC format)
+
+  previous_message_hash: Sha512256Hash;
+  last_message_hash: Sha512256Hash; // this contains the hash of the last message in this block if CLASSIC format
+}
+
+/**
+ * block of messages originally encoded in the classic format
+ */
+table ClassicMessageBlock {
+  sketch: ClassicMessageBlockSketch;
+  object_signatures: RunLengthCodedDictionaryColumn; // this is the object signatures of the messages, this needed to decode the messages.
+  crypto_signatures: [ubyte]; // this is ed25519 signatures of the messages (per chunk of 64 bytes)
+
+  messages: [ubyte] (flexbuffer); // this is the remaining messages data encoded using flexbuffers for campactness while keeping ease of access.
+}

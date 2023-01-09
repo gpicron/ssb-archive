@@ -1,0 +1,15 @@
+
+
+// The Sha512256Hash struct represents the result of a SHA-512-256 hashing. It is an array of
+// 32 bytes that can be used to represent the hash of a message or other data.
+struct Sha512256Hash {
+  data: [uint8:32];
+}
+
+
+// The Ed25519Key struct represents a key of an ed25519 keypair. It is an array of 32 bytes
+// that can be used to sign and verify messages or other data.
+struct Ed25519Key {
+  data: [uint8:32];
+}
+

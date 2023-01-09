@@ -1,0 +1,35 @@
+include "core.fbs";
+include "structs.fbs";
+
+// This table represents a dictionary of strings. It contains an array of entries, each
+// of which is a string.
+table StringDictionary {
+  entries: [string];
+}
+
+// This table represents a dictionary of arrays of integers. It contains an array of entries,
+// each of which is a StreamVByteArray1234.
+table IntArrayDictionary {
+  entries: [StreamVByteArray1234];
+}
+
+// This table represents a reference to a StringDictionary. It contains a field for the
+// blobId of the StringDictionary and a field for the parent reference.
+table StringDictionaryRef {
+  blobId: Sha512256Hash;
+  parent: StringDictionaryRef;
+}
+
+// This table represents a reference to an IntArrayDictionary. It contains a field for the
+// blobId of the IntArrayDictionary and a field for the parent reference.
+table IntArrayDictionaryRef {
+  blobId: Sha512256Hash;
+  parent: IntArrayDictionaryRef;
+}
+
+// This union represents a reference to either a StringDictionary or an IntArrayDictionary.
+// It contains fields for both types of references.
+union DictionaryRef {
+  StringDictionaryRef,
+  IntArrayDictionaryRef
+}
