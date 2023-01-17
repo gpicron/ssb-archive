@@ -48,6 +48,9 @@ old feeds.
 - [3. Implementation](#3-implementation)
 - [4. Benefits](#4-benefits)
 - [5. Potential extensions](#5-potential-extensions)
+  - [5.1 ssb-bipf2 as a general network and ondisk storage](#51-ssb-bipf2-as-a-general-network-and-ondisk-storage)
+  - [5.2 Fromm ssb-archive to ssb-redux](#52-fromm-ssb-archive-to-ssb-redux)
+  - [5.2 Random ideas](#52-random-ideas)
 
 
 # 1. Design
@@ -353,6 +356,7 @@ The ssb-archive feature could offer a number of benefits, including:
 
 # 5. Potential extensions
 
+## 5.1 ssb-bipf2 as a general network and ondisk storage
 1. The ssb-archive feature is driven by the feed owner's client application.
    This means that users replicating that feed and using a client application
    that supports the ssb-archive feature will only benefit from its features if
@@ -369,5 +373,17 @@ The ssb-archive feature could offer a number of benefits, including:
    dictionaries to another can be implemented very efficiently. In fact,
    encoding messages in the ssb-bipf2 format should not be less performant and
    more demanding than JSON serialization while dramatically reducing bandwidth usage.
-3. **ssb-metafeed** comes with the notion of "stopping" a feed. This features 
+
+## 5.2 Fromm ssb-archive to ssb-redux
+
+With the arrival of metafeed, it is likely that feeds will become more specialized and tailored to specific applications. This may involve defining schemas for message types and application-specific rules. For example, there may be feeds dedicated to messaging and social media, using a vocabulary and message types defined by ActivityPub. Additionally, there may be feeds for accounting that use ssb-tokens, or feeds for trust management and self-sovereign identity (ssb-DID).
+
+A general way to view a feed is as a sequence of committed operations from the owner, which can be reduced to a view according to specific application rules, following the principles of the Event Sourcing design pattern as seen in P2PPanda. The ssb-archive commitment could be more focused on snapshot commitments, with application-specific rules for reduction and a unique data model for each block. For example, a feed for social media using ActivityPub vocabulary could drop previous versions of updated ActivityPub objects and deleted ActivityPub objects, while a feed for accounting could show the balances of exchanges.
+
+Connected but not directly dependent, I believe that the evolution of the SSB propagation algorithm to better handle forked feeds is crucial for the future of the system. It is my personal opinion that SSB should develop a mechanism for detecting and propagating forks and give feed owners the option to reconcile branches by creating a join commitment message. I think this would greatly improve data management and replication across the network. It's a way to increase the robustness and reliability of the system.  My personal proposal to that are in https://gpicron.github.io/ssb-clock-spec/ (WIP)
+
+
+## 5.2 Random ideas
+
+1. **ssb-metafeed** comes with the notion of "stopping" a feed. This features 
    can also be combined with ssb-archive feature. 
