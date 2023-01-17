@@ -1,22 +1,26 @@
 # ssb-archive feature proposal<!-- omit from toc -->
 
-The **Secure Scuttlebutt (SSB) community** is constantly seeking ways to improve the
+The **Secure Scuttlebutt (SSB) community** is constantly seeking ways to improve
+the
 performance and efficiency of the SSB system, particularly when it comes to
 loading and processing large old feeds. To address this issue, we propose a new
 feature called "ssb-archive".
 
-The main goal of the ssb-archive feature is to **improve the user experience** when
+The main goal of the ssb-archive feature is to **improve the user experience**
+when
 loading and following a new feed, especially for large feeds, by allowing them
 to be efficiently transmitted, scanned and processed. It also aims to **improve
 the on-disk footprint** of the feeds by using a deterministic format that can be
 shared as SSB blobs.
 
-The ssb-archive feature is **designed to be optional**, so as not to impact existing
+The ssb-archive feature is **designed to be optional**, so as not to impact
+existing
 clients. It uses a FlatBuffer schema that is inspired by IPFS, Apache Parquet,
 and other ideas, and employs dictionary encoding for compression and column
 oriented encoding for key required fields. It avoids storing data that can be
 derived from the message (like hash of the messages for instance), **maintain
-the capability to rebuild the original message in its original feed format**, and
+the capability to rebuild the original message in its original feed format**,
+and
 requires messages to be encoded in blocks of consecutive messages from a single
 feed.
 
@@ -49,9 +53,8 @@ old feeds.
 - [4. Benefits](#4-benefits)
 - [5. Potential extensions](#5-potential-extensions)
   - [5.1 ssb-bipf2 as a general network and ondisk storage](#51-ssb-bipf2-as-a-general-network-and-ondisk-storage)
-  - [5.2 Fromm ssb-archive to ssb-redux](#52-fromm-ssb-archive-to-ssb-redux)
-  - [5.2 Random ideas](#52-random-ideas)
-
+  - [5.2 From ssb-archive to ssb-redux](#52-from-ssb-archive-to-ssb-redux)
+  - [5.3 Random ideas](#53-random-ideas)
 
 # 1. Design
 
@@ -85,7 +88,8 @@ single feed. It contains the following fields:
   efficient storage and searchability.
 * **types**: An array of the types of the messages in the block, encoded using
   run length encoding and a dictionary for efficient scanning.
-* **data**: A FormatSpecificBlockData union that stores the data for the messages
+* **data**: A FormatSpecificBlockData union that stores the data for the
+  messages
   in the block, in a feed-format-specific format.
 
 Together, the MessageBlock and MessageBlockRef tables are used to store blocks
@@ -138,9 +142,11 @@ store messages in the original SSB format. To store data for classic format
 messages, the ssb-bipf2 feature uses a table called ClassicMessageBlock. The
 ClassicMessageBlock table contains the following fields:
 
-* **sketch**: A sketch of the block including the public key of the author and the
+* **sketch**: A sketch of the block including the public key of the author and
+  the
   hash of the last message in the block.
-* **object_signatures**: An array of the object signatures of the messages, encoded
+* **object_signatures**: An array of the object signatures of the messages,
+  encoded
   using run length encoding and a dictionary for efficient scanning.
   crypto_signatures: An array of the ed25519 signatures of the messages, encoded
   as a sequence of bytes.
@@ -182,27 +188,29 @@ format, these fields are encoded as arrays of (key, value) tuples.
 
 The ssb-bipf2 format stores the following fields for each message:
 
-* A set of mandatory paths, including '**content.type**' and '**timestamp**', which
-are stored in a column-oriented format for efficient retrieval.
+* A set of mandatory paths, including '**content.type**' and '**timestamp**',
+  which
+  are stored in a column-oriented format for efficient retrieval.
 
 * The **signature of the JSON object**, up to these excluded paths containing
-arrays, is mapped to an integer using a dictionary of object signatures,
-with each entry being an array of integers corresponding to the sequence of
-paths themselves, which are encoded in a dictionary of paths, with each entry
-being an array of integers corresponding to the sequence of field names,
-which are encoded in a dictionary of keys. The integer representing the
-object signature is stored in a column-oriented format at the Message Block
-level.
+  arrays, is mapped to an integer using a dictionary of object signatures,
+  with each entry being an array of integers corresponding to the sequence of
+  paths themselves, which are encoded in a dictionary of paths, with each entry
+  being an array of integers corresponding to the sequence of field names,
+  which are encoded in a dictionary of keys. The integer representing the
+  object signature is stored in a column-oriented format at the Message Block
+  level.
 
 * The data corresponding to the object signature is stored in an array
-using FlexBuffer.
+  using FlexBuffer.
 
 Overall, the ssb-bipf2 format allows for efficient and selective retrieval of
 data while still maintaining the structure and meaning of the original message.
 
 ## 1.5. Emitting "archive" messages
 
-To implement the ssb-archive proposal, a new message type called _"archive"_ would
+To implement the ssb-archive proposal, a new message type called _"archive"_
+would
 be introduced. This message would be created and emitted by clients with the
 ssb-archive feature to store blocks of old messages in a compact and efficient
 format.
@@ -219,7 +227,8 @@ following steps:
   would be stored in a MessageBlock blobs as well as needed DictionaryBlocks
   blobs if not reused.
 
-* **Create a Bundle**: The client would then create a Bundle, which is a meta block
+* **Create a Bundle**: The client would then create a Bundle, which is a meta
+  block
   that includes references to the archived MessageBlocks and DictionaryBlocks.
   The Bundle would be stored in the content of the "archive" message.
 
@@ -285,7 +294,8 @@ The ssb-archive feature can be implemented in a few steps:
           DictionaryBlocks if needed).
         * **Compacting/Merging one or more Bundles** of MessageBlocks and
           DictionaryBlocks (and optionally mapping the other Dictionaries).
-        * **Querying a Bundle** of MessageBlocks on a set of criteria. To simplify
+        * **Querying a Bundle** of MessageBlocks on a set of criteria. To
+          simplify
           the integration in Javascript-based stacks, the queries can be
           modelled
           after the ssb-db2 query format.
@@ -332,7 +342,8 @@ The ssb-archive feature can be implemented in a few steps:
 
 The ssb-archive feature could offer a number of benefits, including:
 
-* **Improved performance and efficiency**: By storing blocks of old messages in a
+* **Improved performance and efficiency**: By storing blocks of old messages in
+  a
   compact and efficient format, the ssb-archive feature can significantly
   improve
   the performance and efficiency of SSB clients, particularly when accessing and
@@ -357,33 +368,57 @@ The ssb-archive feature could offer a number of benefits, including:
 # 5. Potential extensions
 
 ## 5.1 ssb-bipf2 as a general network and ondisk storage
+
 1. The ssb-archive feature is driven by the feed owner's client application.
    This means that users replicating that feed and using a client application
    that supports the ssb-archive feature will only benefit from its features if
    the feed owner uses a client application that supports the ssb-archive
    feature and configures it to archive old messages. However, it is possible to
-   **extend the usage of the ssb-bipf2 format to pubs servers** to facilitate the
+   **extend the usage of the ssb-bipf2 format to pubs servers** to facilitate
+   the
    replication of old messages by new users. This can be achieved by allowing a
    pub server to store the messages in the ssb-bipf2 format and providing a way
    for clients to retrieve the messages in that format.
 
-2. In a **direct replication scenario**, the ssb-bipf2 format can be used by peers
+2. In a **direct replication scenario**, the ssb-bipf2 format can be used by
+   peers
    to exchange messages in a compact and efficient manner if they share common
    dictionaries. The transcoding of messages from the ssb-bipf2 from one set of
    dictionaries to another can be implemented very efficiently. In fact,
    encoding messages in the ssb-bipf2 format should not be less performant and
-   more demanding than JSON serialization while dramatically reducing bandwidth usage.
+   more demanding than JSON serialization while dramatically reducing bandwidth
+   usage.
 
-## 5.2 Fromm ssb-archive to ssb-redux
+## 5.2 From ssb-archive to ssb-redux
 
-With the arrival of metafeed, it is likely that feeds will become more specialized and tailored to specific applications. This may involve defining schemas for message types and application-specific rules. For example, there may be feeds dedicated to messaging and social media, using a vocabulary and message types defined by ActivityPub. Additionally, there may be feeds for accounting that use ssb-tokens, or feeds for trust management and self-sovereign identity (ssb-DID).
+With the arrival of metafeed, it is likely that feeds will become more
+specialized and tailored to specific applications. This may involve defining
+schemas for message types and application-specific rules. For example, there may
+be feeds dedicated to messaging and social media, using a vocabulary and message
+types defined by ActivityPub. Additionally, there may be feeds for accounting
+that use ssb-tokens, or feeds for trust management and self-sovereign identity (
+ssb-DID).
 
-A general way to view a feed is as a sequence of committed operations from the owner, which can be reduced to a view according to specific application rules, following the principles of the Event Sourcing design pattern as seen in P2PPanda. The ssb-archive commitment could be more focused on snapshot commitments, with application-specific rules for reduction and a unique data model for each block. For example, a feed for social media using ActivityPub vocabulary could drop previous versions of updated ActivityPub objects and deleted ActivityPub objects, while a feed for accounting could show the balances of exchanges.
+A general way to view a feed is as a sequence of committed operations from the
+owner, which can be reduced to a view according to specific application rules,
+following the principles of the Event Sourcing design pattern as seen in
+P2PPanda. The ssb-archive commitment could be more focused on snapshot
+commitments, with application-specific rules for reduction and a unique data
+model for each block. For example, a feed for social media using ActivityPub
+vocabulary could drop previous versions of updated ActivityPub objects and
+deleted ActivityPub objects, while a feed for accounting could show the balances
+of exchanges.
 
-Connected but not directly dependent, I believe that the evolution of the SSB propagation algorithm to better handle forked feeds is crucial for the future of the system. It is my personal opinion that SSB should develop a mechanism for detecting and propagating forks and give feed owners the option to reconcile branches by creating a join commitment message. I think this would greatly improve data management and replication across the network. It's a way to increase the robustness and reliability of the system.  My personal proposal to that are in https://gpicron.github.io/ssb-clock-spec/ (WIP)
+Connected but not directly dependent, I believe that the evolution of the SSB
+propagation algorithm to better handle forked feeds is crucial for the future of
+the system. It is my personal opinion that SSB should develop a mechanism for
+detecting and propagating forks and give feed owners the option to reconcile
+branches by creating a join commitment message. I think this would greatly
+improve data management and replication across the network. It's a way to
+increase the robustness and reliability of the system. My personal proposal to
+that are in https://gpicron.github.io/ssb-clock-spec/ (WIP)
 
+## 5.3 Random ideas
 
-## 5.2 Random ideas
-
-1. **ssb-metafeed** comes with the notion of "stopping" a feed. This features 
+1. **ssb-metafeed** comes with the notion of "stopping" a feed. This features
    can also be combined with ssb-archive feature. 
